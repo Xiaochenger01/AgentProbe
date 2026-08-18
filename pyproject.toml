@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentprobe"
+version = "0.1.0"
+description = "AgentProbe: Agent 评测 / 回归门禁 / 可观测 / 失败归因 / DPO 数据导出 —— 给你的 Agent 做体检"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "pydantic>=2.5",
+  "typer>=0.12",
+  "pyyaml>=6.0",
+  "requests>=2.31",
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+agentprobe = "agentprobe.cli:app"
+
+[tool.setuptools.packages.find]
+include = ["agentprobe*"]

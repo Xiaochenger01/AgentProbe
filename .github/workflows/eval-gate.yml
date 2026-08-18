@@ -1,0 +1,21 @@
+name: agent-eval-gate
+on: [pull_request]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+      - name: run evaluation (mock demo; replace with real config in your repo)
+        # configs/example.yaml 内置 seed: 21,mock 适配器按 case/repeat 派生局部 RNG,
+        # 每次运行结果完全一致 → 基线对比稳定,不会因随机波动误拦截
+        run: agentprobe run -c configs/example.yaml --mock
+      - name: regression gate vs baseline
+        run: |
+          NEW=$(ls -t runs/*.json | head -1)
+          agentprobe compare baselines/mock_baseline.json "$NEW" --max-drop 0.05
