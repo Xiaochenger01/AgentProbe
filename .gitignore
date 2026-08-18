@@ -2,8 +2,7 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
-runs/*.json
-runs/*.md
+runs/*
 !runs/.gitkeep
 .env
 dist/
