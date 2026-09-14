@@ -1,0 +1,6 @@
+Captured 2026-09-14 via Playwright + Chromium against agentprobe serve --port 8000.
+Runs: baselines copied to runs/ (mock_baseline, qwen_baseline, qwen_v2_regression).
+URLs:
+  /dashboard -> dashboard-overview.png
+  /dashboard/qwen_v2_regression -> dashboard-trace.png (detail; run_id hash links 500 — used file stem)
+  /dashboard/compare -> dashboard-compare.png

@@ -38,6 +38,13 @@ def create_app(runs_dir: str = "runs") -> FastAPI:
         for p in rd.glob("*.json"):
             if p.stem == run_id or p.stem.startswith(run_id):
                 return p
+        for p in rd.glob("*.json"):
+            try:
+                rep = load_report(p)
+            except Exception:  # noqa: BLE001
+                continue
+            if rep.run_id == run_id or rep.run_id.startswith(run_id):
+                return p
         raise HTTPException(404, f"run {run_id} not found")
 
     @app.get("/runs/{run_id}")

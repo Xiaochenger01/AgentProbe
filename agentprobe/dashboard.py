@@ -571,12 +571,13 @@ def render_index(runs_dir: str, runs: list[dict]) -> str:
             tags_html += f'<span class="tag tag-{tc}">{_tag_label(t)} {v:.0%}</span>'
 
         sub_info = " · ".join(sub_parts)
+        link_id = (r.get("file") or r["run_id"]).removesuffix(".json")
 
         items += f"""
 <div class="card {color} anim anim-d{i%4+1}">
   <div class="card-header">
     <div style="flex:1;min-width:0">
-      <a href="/dashboard/{r['run_id']}" style="color:var(--text);text-decoration:none">
+      <a href="/dashboard/{link_id}" style="color:var(--text);text-decoration:none">
         <span class="card-title">{label}</span>
       </a>
       <div class="card-subtitle">{sub_info}</div>
@@ -1103,8 +1104,16 @@ def _cmp_result(cmp: dict, base_info: dict | None = None, new_info: dict | None 
 
 
 def _find_report(runs_dir: str, run_id: str) -> Path:
+    """Resolve by filename stem or by report.run_id inside the JSON."""
     for p in Path(runs_dir).glob("*.json"):
         if p.stem == run_id or p.stem.startswith(run_id):
+            return p
+    for p in Path(runs_dir).glob("*.json"):
+        try:
+            rep = load_report(p)
+        except Exception:  # noqa: BLE001
+            continue
+        if rep.run_id == run_id or rep.run_id.startswith(run_id):
             return p
     raise FileNotFoundError(f"run {run_id} not found")
 
