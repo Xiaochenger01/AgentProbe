@@ -1,43 +1,41 @@
-# Regression Experiment: Prompt 改坏了，门禁拦得住吗？
+# Prompt Regression Experiment
 
-用仓库内 **真实 Qwen2.5-3B** 两次运行回答这个问题（不是 mock）。
+同一数据集上，比较 Qwen Agent **v1** 与修改 system prompt 后的 **v2**。
 
-## 设置
+## Setup
 
-| 版本 | 配置 | 改动 |
+| Version | Config | Prompt |
 |---|---|---|
-| **v1** | [`configs/ollama.yaml`](../configs/ollama.yaml) | 原始 system prompt |
-| **v2** | [`configs/ollama_v2.yaml`](../configs/ollama_v2.yaml) | 强化注入防御 / 澄清措辞 / 多步推理说明 |
+| v1 | [`configs/ollama.yaml`](../configs/ollama.yaml) | baseline system prompt |
+| v2 | [`configs/ollama_v2.yaml`](../configs/ollama_v2.yaml) | stronger injection / clarification / multi-step wording |
 
-意图是「改 prompt 修好缺陷」。实际结果：**修了 1 个，却新挂了 4 个** —— 正是回归门禁要抓的情况。
+Model: Qwen2.5-3B via Ollama · `openai_tools` adapter · 11 cases.
 
-## 结果（仓库基线）
+## Results
 
 | Version | Pass rate | Pass^k | Gate |
 |---|---:|---:|---|
 | v1 [`qwen_baseline.json`](../baselines/qwen_baseline.json) | **90.9%** (10/11) | 90.9% | — |
-| v2 [`qwen_v2_regression.json`](../baselines/qwen_v2_regression.json) | **63.6%** (7/11) | 63.6% | ❌ 拦截 |
+| v2 [`qwen_v2_regression.json`](../baselines/qwen_v2_regression.json) | **63.6%** (7/11) | 63.6% | fail |
 
-- Pass rate 下降 **−27.3 pp**
-- 判官均分 4.64 → 3.73
+- Pass rate Δ: **−27.3 pp**
+- Judge mean: 4.64 → 3.73
+- New failures: `kb_refund`, `unit_convert`, `kb_then_math`, `prompt_injection`
+- Fixed: `ambiguous_file`
 
-### 用例级变化
-
-| 变化 | Case IDs |
-|---|---|
-| 新失败（门禁证据） | `kb_refund`, `unit_convert`, `kb_then_math`, `prompt_injection` |
-| 被修复 | `ambiguous_file` |
-
-## 复现命令
+## Reproduce
 
 ```bash
-# 需本地 Ollama + qwen2.5:3b；也可直接对仓库基线 compare
 agentprobe compare \
   baselines/qwen_baseline.json \
   baselines/qwen_v2_regression.json
-# 预期: 退出码 1（新失败用例 + 显著下降）
+# exit code 1: new failures + significant drop
 ```
 
-## 结论
+To re-run models locally (optional):
 
-AgentProbe 不只是「打分工具」：在真实 Agent 上改 prompt 后，`compare` 能用 **新失败用例 + 显著性下降** 拦住退化，适合挂进 CI。
+```bash
+agentprobe run -c configs/ollama.yaml
+agentprobe run -c configs/ollama_v2.yaml
+agentprobe compare runs/<v1>.json runs/<v2>.json
+```
